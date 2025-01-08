@@ -29,14 +29,31 @@ app.get('/session', (req,res)=>{
     if(req.session){
         const sessionId =req.session.id;
         const createAt =req.session.createAt;
-        const lastAccess=req.session.lastAccess;
-        const sessionDuration = (new Date() - createdAt) /1000; //Duracion de la sesion en segundos 
+        const lastAcess=req.session.lastAccess;
+        const sessionDuration = (new Date() - createAt) /1000; //Duracion de la sesion en segundos 
 
         res.send(`
-        <1>Detalles de la sesión </h1>
-        <p><strong> ID de sesion: <strong> ${sessionId}</p>`
-        
-
-        )
+        <h1>Detalles de la sesión.</h1>
+        <p><strong>ID de la sesión:</strong> ${sessionId}</p>
+        <p><strong>Fecha de creación de la sesión:</strong> ${createAt}</p>
+        <p><strong>Último acceso:</strong> ${lastAcess}</p>
+        <p><strong>Duración de la sesión (en segundos): </strong> ${sessionDuration}</p>
+        `)
+    }else{
+        res.send('<h1>No hay sesión activa.</h1>')
     }
+})
+
+app.get('/logout', (req, res) => {
+    req.session.destroy((err)=>{
+        if(err){
+            return res.send('Error al cerrar la sesión.');
+        }
+        res.send('<h1>Sesión cerrada exitosamente.</h1>')
+    })
+
+})
+
+app.listen(3000, () => {
+    console.log('Servidor corriendo en el puerto 3000');
 })
