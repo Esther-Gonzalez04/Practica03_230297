@@ -26,7 +26,7 @@ app.use((req, res, next) => {
 
 // Ruta para mostrar la información de la sesión
 app.get('/session', (req, res) => {
-    if(req.session) {
+    if(req.session && req.session.isLoggedIn) {
         const sessionId = req.session.id;
         // Convertimos las fechas string a objetos Date
         const createAt = new Date(req.session.createAt);
@@ -50,10 +50,23 @@ app.get('/logout', (req, res)=> {
     req.session.destroy((err) => {
         if(err) {
             return res.send('Error al cerrar la sesión.');
-        }
-        res.send('<h1>Sesión cerrada exitosamente.</h1>')
+        } 
+        res.send(`
+            <h1>Sesión cerrada exitosamente.</h1>`);
     })
 })
+
+//Ruta para iniciar sesión
+app.get('/login', (req, res) => {
+    if (!req.session.isLoggedIn) {
+        req.session.isLoggedIn = true;
+        req.session.createAt = new Date().toISOString();
+        res.send(`
+            <h1>Bienvenida, Esther</h1>
+            <p>Has iniciado sesión.</p>
+            `);
+    }
+});
 
 app.listen(3000, () => {
     console.log('Servidor corriendo en el puerto 3000');
