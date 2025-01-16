@@ -10,7 +10,7 @@
     "Express",
     "Session"
   ],
-  "author": "Esther Gonzalez Prelata",
+  "author": "Esther Gonzalez Peralta",
   "license": "ISC",
   "dependencies": {
     "express": "^4.21.2",

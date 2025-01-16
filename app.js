@@ -13,7 +13,7 @@ app.use(session({
 }));
 
 // Middleware para mostrar detalles de la sesión
-app.use((req, res, next) => {
+/*app.use((req, res, next) => {
     if(req.session) {
         if (!req.session.createAt) {
             // Guardamos la fecha como string ISO
@@ -23,6 +23,67 @@ app.use((req, res, next) => {
         req.session.lastAccess = new Date().toISOString();
     }
     next();
+});*/
+
+//Ruta para inicializar la sesión 
+app.get('/login/:name', (req ,res) =>{
+    const userName = req.params.name;
+    if(!req.session.createAt){
+        req.session.userName = userName;
+        req.session.createAt= new Date();
+        req.session.lastAcess= new Date ();
+        //req.session.createAt = new Date();
+        //req.session.lastAcess= new Date();
+        res.send(`
+            <h1>Bienvenido, tu sesión ha sido iniciada</h1>
+            <p><strong>Nombre de usuario: </strong> ${userName}</p>
+            `)
+    }else{
+        res.send('<h1>Ya existe una sesión</h1>')
+    }
+})
+
+//ruta para actualizar la fecha de la última consulta 
+
+app.get('/update', (req, res) =>{
+    if(req.session.createAt){
+        req.session.lastAcess = new Date();
+        res.send('La fecha de último acceso ha sido actualizada')
+    }else{
+        res.send('No hay una sesión activa');
+    }
+})
+
+//ruta para obtener el estado de la sesión 
+
+app.get('/status', (req, res) =>{
+    if(req.session.createAt){
+        const now = new Date();
+        const started= new Date(req.session.createAt);
+        const lastUpdate= new Date(req.session.lastAcess);
+
+        //Calcula la antiguedad de la sesión
+        const sessionAgeMs= now- started;
+        const hours= Math.floor(sessionAgeMs/ (1000*60*60))
+        const minutes = Math.floor((sessionAgeMs % (1000*60*60))/(1000*60));
+        const seconds= Math.floor((sessionAgeMs % (1000*60))/1000)
+
+        const createdAt_CDMX = moment(started).tz('America/Mexico_City').format('YYYY-MM-DD HH:mm:ss')
+        const lastAcces_CDMX = moment(lastUpdate).tz('America/Mexico_City').format('YYYY-MM-DD HH:mm:ss')
+        
+
+        res.json({
+            message: 'Estado de la sesión',
+            sessionId: req.sessionID,
+            inicio: createdAt_CDMX,
+            ultimoAcceso: lastAcces_CDMX,
+            antiguedad: `${hours} horas, ${minutes} minutos y ${seconds} segundos`
+            
+        });
+
+    }else{
+        res.send('No hay sesión activa');
+    }
 });
 
 // Ruta para mostrar la información de la sesión
@@ -47,27 +108,37 @@ app.get('/session', (req, res) => {
     }
 });
 
-app.get('/logout', (req, res)=> {
-    req.session.destroy((err) => {
-        if(err) {
-            return res.send('Error al cerrar la sesión.');
-        } 
-        res.send(`
-            <h1>Sesión cerrada correctamente</h1>`);
-    })
-})
 
 //Ruta para iniciar sesión
-app.get('/login', (req, res) => {
+app.get('/login/:usuario/:contrasenia', (req, res) => {
+    const usuario = req.params.usuario;
+    const contrasenia = req.params.contrasenia;
     if (!req.session.isLoggedIn) {
+        req.session.usuario = usuario;
+        req.session.contrasenia = contrasenia;
         req.session.isLoggedIn = true;
         req.session.createAt = new Date().toISOString();
         res.send(`
-            <h1>Bienvenida, Esther</h1>
+            <h1>Bienvenido ${usuario}</h1>
             <p>Has iniciado sesión.</p>
             `);
     }
 });
+
+app.get('/logout', (req, res) => {
+    if(req.session){
+        req.session.destroy((err) => {
+            if(err){
+                return res.status(500).send('Error al cerrar sesión');
+            }
+            res.send('<h1>Sesión cerrada exitosamente.</h1>')
+        })
+    }else{
+        res.send('No hay una sesión activca para cerrar')
+    }
+
+})
+
 
 app.listen(3000, () => {
     console.log('Servidor corriendo en el puerto 3000');
