@@ -1,14 +1,15 @@
 const express = require('express')
 const session = require('express-session')
 const app = express();
+const moment =require ('moment-timezone')
 
 // Cofiguración  de la sesión 
 
 app.use(session({
-    secret: 'mi-clave-secreta',  // Secreto para firmar la cookie de sesión 
+    secret: 'p3-EGP#girlmorgan-sesionespersistentes',  // Secreto para firmar la cookie de sesión 
     resave: false, //No resguardar la sesión si no ha sido modificada 
     saveUninitialized: true, //Guarda la sesión aunque no haya sido inicializada 
-    cookie: {secure: false}   // Usar secure: true solo si suas HTTPS
+    cookie: {secure: false, maxAge: 24 * 60 * 60 * 100}   // 24 horas
 }));
 
 // Middleware para mostrar detalles de la sesión
@@ -52,7 +53,7 @@ app.get('/logout', (req, res)=> {
             return res.send('Error al cerrar la sesión.');
         } 
         res.send(`
-            <h1>Sesión cerrada exitosamente.</h1>`);
+            <h1>Sesión cerrada correctamente</h1>`);
     })
 })
 
