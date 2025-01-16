@@ -116,12 +116,16 @@ app.get('/logout', (req, res)=> {
 });
 
 //Ruta para iniciar sesión
-app.get('/login', (req, res) => {
+app.get('/login/:usuario/:contrasenia', (req, res) => {
+    const usuario = req.params.usuario;
+    const contrasenia = req.params.contrasenia;
     if (!req.session.isLoggedIn) {
+        req.session.usuario = usuario;
+        req.session.contrasenia = contrasenia;
         req.session.isLoggedIn = true;
         req.session.createAt = new Date().toISOString();
         res.send(`
-            <h1>Bienvenida, Esther</h1>
+            <h1>Bienvenido ${usuario}</h1>
             <p>Has iniciado sesión.</p>
             `);
     }
