@@ -1,14 +1,15 @@
 const express = require('express')
 const session = require('express-session')
 const app = express();
+const moment =require ('moment-timezone')
 
 // Cofiguración  de la sesión 
 
 app.use(session({
-    secret: 'mi-clave-secreta',  // Secreto para firmar la cookie de sesión 
+    secret: 'p3-EGP#girlmorgan-sesionespersistentes',  // Secreto para firmar la cookie de sesión 
     resave: false, //No resguardar la sesión si no ha sido modificada 
     saveUninitialized: true, //Guarda la sesión aunque no haya sido inicializada 
-    cookie: {secure: false}   // Usar secure: true solo si suas HTTPS
+    cookie: {secure: false, maxAge: 24 * 60 * 60 * 100}   // 24 horas
 }));
 
 // Middleware para mostrar detalles de la sesión
@@ -26,7 +27,7 @@ app.use((req, res, next) => {
 
 // Ruta para mostrar la información de la sesión
 app.get('/session', (req, res) => {
-    if(req.session) {
+    if(req.session && req.session.isLoggedIn) {
         const sessionId = req.session.id;
         // Convertimos las fechas string a objetos Date
         const createAt = new Date(req.session.createAt);
@@ -50,10 +51,23 @@ app.get('/logout', (req, res)=> {
     req.session.destroy((err) => {
         if(err) {
             return res.send('Error al cerrar la sesión.');
-        }
-        res.send('<h1>Sesión cerrada exitosamente.</h1>')
+        } 
+        res.send(`
+            <h1>Sesión cerrada correctamente</h1>`);
     })
 })
+
+//Ruta para iniciar sesión
+app.get('/login', (req, res) => {
+    if (!req.session.isLoggedIn) {
+        req.session.isLoggedIn = true;
+        req.session.createAt = new Date().toISOString();
+        res.send(`
+            <h1>Bienvenida, Esther</h1>
+            <p>Has iniciado sesión.</p>
+            `);
+    }
+});
 
 app.listen(3000, () => {
     console.log('Servidor corriendo en el puerto 3000');
