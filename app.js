@@ -25,6 +25,60 @@ app.use((req, res, next) => {
     next();
 });
 
+//Ruta para inicializar la sesión 
+app.get('/login/', (req, res)=>{
+    if(!req.session.createdAt){
+        req.session.createdAt=new Date();
+        req.session.lastAccess= new Date();
+        res.send('La sesion ha sido iniciada');
+    } else{
+        res.send('Ya existe una sesión');
+    }
+});
+
+//ruta para actualizar la fecha de la última consulta 
+
+app.get('/update', (req, res) =>{
+    if(req.session.createAt){
+        req.session.lastAcess = new Date();
+        res.send('La fecha de último acceso ha sido actualizada')
+    }else{
+        res.send('No hay una sesión activa');
+    }
+})
+
+//ruta para obtener el estado de la sesión 
+
+app.get('/status', (req, res) =>{
+    if(req.session.createAt){
+        const now = new Date();
+        const started= new Date(req.session.createAt);
+        const lastUpdate= new Date(req.session.lastAcess);
+
+        //Calcula la antiguedad de la sesión
+        const sessionAgeMs= now- started;
+        const hours= Math.floor(sessionAgeMs/ (1000*60*60))
+        const minutes = Math.floor((sessionAgeMs % (1000*60*60))/(1000*60));
+        const seconds= Math.floor((sessionAgeMs % (1000*60))/1000)
+
+        const createdAt_CDMX = moment(started).tz('America/Mexico_City').format('YYYY-MM-DD HH:mm:ss')
+        const lastAcces_CDMX = moment(lastUpdate).tz('America/Mexico_City').format('YYYY-MM-DD HH:mm:ss')
+        
+
+        res.json({
+            message: 'Estado de la sesión',
+            sessionId: req.sessionID,
+            inicio: createdAt_CDMX,
+            ultimoAcceso: lastAcces_CDMX,
+            antiguedad: `${hours} horas, ${minutes} minutos y ${seconds} segundos`
+            
+        });
+
+    }else{
+        res.send('No hay sesión activa');
+    }
+});
+
 // Ruta para mostrar la información de la sesión
 app.get('/session', (req, res) => {
     if(req.session && req.session.isLoggedIn) {
@@ -48,14 +102,18 @@ app.get('/session', (req, res) => {
 });
 
 app.get('/logout', (req, res)=> {
-    req.session.destroy((err) => {
-        if(err) {
-            return res.send('Error al cerrar la sesión.');
-        } 
-        res.send(`
-            <h1>Sesión cerrada correctamente</h1>`);
-    })
-})
+    if(req.session.createdAt){
+        req.session.destroy((err)=>{
+            if(err){
+                return res.status(500).send('Error al cerrar la sesión');
+            }
+            res.send('Sesión cerradacorrectamente.');
+        });
+        
+    }else{
+        res.send('No hay una sesión activapara cerrar');
+    }
+});
 
 //Ruta para iniciar sesión
 app.get('/login', (req, res) => {
