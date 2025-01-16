@@ -13,7 +13,7 @@ app.use(session({
 }));
 
 // Middleware para mostrar detalles de la sesión
-app.use((req, res, next) => {
+/*app.use((req, res, next) => {
     if(req.session) {
         if (!req.session.createAt) {
             // Guardamos la fecha como string ISO
@@ -23,7 +23,7 @@ app.use((req, res, next) => {
         req.session.lastAccess = new Date().toISOString();
     }
     next();
-});
+});*/
 
 //Ruta para inicializar la sesión 
 app.get('/login/', (req, res)=>{
