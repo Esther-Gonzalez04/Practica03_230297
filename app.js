@@ -26,15 +26,22 @@ app.use(session({
 });*/
 
 //Ruta para inicializar la sesión 
-app.get('/login/', (req, res)=>{
-    if(!req.session.createdAt){
-        req.session.createdAt=new Date();
-        req.session.lastAccess= new Date();
-        res.send('La sesion ha sido iniciada');
-    } else{
-        res.send('Ya existe una sesión');
+app.get('/login/:name', (req ,res) =>{
+    const userName = req.params.name;
+    if(!req.session.createAt){
+        req.session.userName = userName;
+        req.session.createAt= new Date();
+        req.session.lastAcess= new Date ();
+        //req.session.createAt = new Date();
+        //req.session.lastAcess= new Date();
+        res.send(`
+            <h1>Bienvenido, tu sesión ha sido iniciada</h1>
+            <p><strong>Nombre de usuario: </strong> ${userName}</p>
+            `)
+    }else{
+        res.send('<h1>Ya existe una sesión</h1>')
     }
-});
+})
 
 //ruta para actualizar la fecha de la última consulta 
 
@@ -101,19 +108,6 @@ app.get('/session', (req, res) => {
     }
 });
 
-app.get('/logout', (req, res)=> {
-    if(req.session.createdAt){
-        req.session.destroy((err)=>{
-            if(err){
-                return res.status(500).send('Error al cerrar la sesión');
-            }
-            res.send('Sesión cerradacorrectamente.');
-        });
-        
-    }else{
-        res.send('No hay una sesión activapara cerrar');
-    }
-});
 
 //Ruta para iniciar sesión
 app.get('/login/:usuario/:contrasenia', (req, res) => {
@@ -130,6 +124,21 @@ app.get('/login/:usuario/:contrasenia', (req, res) => {
             `);
     }
 });
+
+app.get('/logout', (req, res) => {
+    if(req.session){
+        req.session.destroy((err) => {
+            if(err){
+                return res.status(500).send('Error al cerrar sesión');
+            }
+            res.send('<h1>Sesión cerrada exitosamente.</h1>')
+        })
+    }else{
+        res.send('No hay una sesión activca para cerrar')
+    }
+
+})
+
 
 app.listen(3000, () => {
     console.log('Servidor corriendo en el puerto 3000');
